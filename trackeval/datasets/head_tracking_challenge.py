@@ -17,12 +17,11 @@ class HeadTrackingChallenge(_BaseDataset):
         """Default class config values"""
         code_path = utils.get_code_path()
         default_config = {
-            'GT_FOLDER': os.path.join(code_path, 'data/gt/mot_challenge/'),  # Location of GT data
-            'TRACKERS_FOLDER': os.path.join(code_path, 'data/trackers/mot_challenge/'),  # Trackers location
+            'GT_FOLDER': os.path.join(code_path, 'data/gt/ht21/HT21-train'),  # Location of GT data
+            'TRACKERS_FOLDER': os.path.join(code_path, 'data/trackers/ht21/HT21-train'),  # Trackers location
             'OUTPUT_FOLDER': None,  # Where to save eval results (if None, same as TRACKERS_FOLDER)
             'TRACKERS_TO_EVAL': None,  # Filenames of trackers to eval (if None, all in folder)
             'CLASSES_TO_EVAL': ['pedestrian'],  # Valid: ['pedestrian']
-            'BENCHMARK': 'HT',  # Valid: 'HT'. Refers to "Head Tracking or the dataset CroHD"
             'SPLIT_TO_EVAL': 'train',  # Valid: 'train', 'test', 'all'
             'INPUT_AS_ZIP': False,  # Whether tracker input files are zipped
             'PRINT_CONFIG': True,  # Whether to print current config
@@ -31,10 +30,10 @@ class HeadTrackingChallenge(_BaseDataset):
             'OUTPUT_SUB_FOLDER': '',  # Output files are saved in OUTPUT_FOLDER/tracker_name/OUTPUT_SUB_FOLDER
             'TRACKER_DISPLAY_NAMES': None,  # Names of trackers to display, if None: TRACKERS_TO_EVAL
             'SEQMAP_FOLDER': None,  # Where seqmaps are found (if None, GT_FOLDER/seqmaps)
-            'SEQMAP_FILE': None,  # Directly specify seqmap file (if none use seqmap_folder/benchmark-split_to_eval)
+            'SEQMAP_FILE': os.path.join(code_path, "data/gt/ht21/HT21-train.seqmap"),  # Directly specify seqmap file (if none use seqmap_folder/benchmark-split_to_eval)
             'SEQ_INFO': None,  # If not None, directly specify sequences to eval and their number of timesteps
-            'GT_LOC_FORMAT': '{gt_folder}/{seq}/gt/gt.txt',  # '{gt_folder}/{seq}/gt/gt.txt'
-            'SKIP_SPLIT_FOL': False,  # If False, data is in GT_FOLDER/BENCHMARK-SPLIT_TO_EVAL/ and in
+            'GT_LOC_FORMAT': '{gt_folder}/{seq}.txt',  # '{gt_folder}/{seq}.txt'
+            'SKIP_SPLIT_FOL': True,  # If False, data is in GT_FOLDER/BENCHMARK-SPLIT_TO_EVAL/ and in
                                       # TRACKERS_FOLDER/BENCHMARK-SPLIT_TO_EVAL/tracker/
                                       # If True, then the middle 'benchmark-split' folder is skipped for both.
         }
@@ -46,8 +45,8 @@ class HeadTrackingChallenge(_BaseDataset):
         # Fill non-given config values with defaults
         self.config = utils.init_config(config, self.get_default_dataset_config(), self.get_name())
 
-        self.benchmark = self.config['BENCHMARK']
-        gt_set = self.config['BENCHMARK'] + '-' + self.config['SPLIT_TO_EVAL']
+        self.benchmark = 'HT21'
+        gt_set = self.benchmark + '-' + self.config['SPLIT_TO_EVAL']
         self.gt_set = gt_set
         if not self.config['SKIP_SPLIT_FOL']:
             split_fol = gt_set
@@ -66,6 +65,8 @@ class HeadTrackingChallenge(_BaseDataset):
 
         self.tracker_sub_fol = self.config['TRACKER_SUB_FOLDER']
         self.output_sub_fol = self.config['OUTPUT_SUB_FOLDER']
+        if self.output_sub_fol == '':
+            self.output_sub_fol = self.tracker_sub_fol
 
         # Get classes to eval
         self.valid_classes = ['pedestrian']
@@ -148,7 +149,7 @@ class HeadTrackingChallenge(_BaseDataset):
                 seqmap_file = self.config["SEQMAP_FILE"]
             else:
                 if self.config["SEQMAP_FOLDER"] is None:
-                    seqmap_file = os.path.join(self.config['GT_FOLDER'], 'seqmaps', self.gt_set + '.txt')
+                    seqmap_file = os.path.join(self.config['GT_FOLDER'], f'{self.gt_set}.seqmap')
                 else:
                     seqmap_file = os.path.join(self.config["SEQMAP_FOLDER"], self.gt_set + '.txt')
             if not os.path.isfile(seqmap_file):
@@ -156,17 +157,16 @@ class HeadTrackingChallenge(_BaseDataset):
                 raise TrackEvalException('no seqmap found: ' + os.path.basename(seqmap_file))
             with open(seqmap_file) as fp:
                 reader = csv.reader(fp)
-                for i, row in enumerate(reader):
-                    if i == 0 or row[0] == '':
-                        continue
-                    seq = row[0]
-                    seq_list.append(seq)
-                    ini_file = os.path.join(self.gt_fol, seq, 'seqinfo.ini')
-                    if not os.path.isfile(ini_file):
-                        raise TrackEvalException('ini file does not exist: ' + seq + '/' + os.path.basename(ini_file))
-                    ini_data = configparser.ConfigParser()
-                    ini_data.read(ini_file)
-                    seq_lengths[seq] = int(ini_data['Sequence']['seqLength'])
+                for row in reader:
+                    dialect = csv.Sniffer().sniff(fp.read(1024))
+                    fp.seek(0)
+                    reader = csv.reader(fp, dialect)
+                    for row in reader:
+                        if len(row) < 4:
+                            continue
+                        seq = row[0]
+                        seq_list.append(seq)
+                        seq_lengths[seq] = int(row[3])
         return seq_list, seq_lengths
 
     def _load_raw_file(self, tracker, seq, is_gt):
@@ -206,7 +206,7 @@ class HeadTrackingChallenge(_BaseDataset):
         else:
             data_keys += ['tracker_confidences']
 
-        if self.benchmark == 'HT':
+        if self.benchmark == 'HT21':
             data_keys += ['visibility']
             data_keys += ['gt_conf']
         raw_data = {key: [None] * num_timesteps for key in data_keys}
@@ -389,7 +389,7 @@ class HeadTrackingChallenge(_BaseDataset):
                 match_cols = match_cols[actually_matched_mask]
 
                 is_distractor_class = np.logical_not(np.isin(gt_classes[match_rows], cls_id))
-                if self.benchmark == 'HT':
+                if self.benchmark == 'HT21':
                     is_invisible_class = gt_visibility[match_rows] < np.finfo('float').eps
                     low_conf_class = gt_conf[match_rows] < np.finfo('float').eps
                     are_distractors = np.logical_or(is_invisible_class, is_distractor_class, low_conf_class)
@@ -404,7 +404,7 @@ class HeadTrackingChallenge(_BaseDataset):
             similarity_scores = np.delete(similarity_scores, to_remove_tracker, axis=1)
 
             # Remove gt detections marked as to remove (zero marked), and also remove gt detections not in pedestrian
-            if self.do_preproc and self.benchmark == 'HT':
+            if self.do_preproc and self.benchmark == 'HT21':
                 gt_to_keep_mask = (np.not_equal(gt_zero_marked, 0)) & \
                                   (np.equal(gt_classes, cls_id)) & \
                                   (gt_visibility > 0.) & \

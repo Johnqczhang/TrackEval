@@ -2,7 +2,7 @@
 """ run_kitti_mots.py
 
 Run example:
-run_kitti_mots.py --USE_PARALLEL False --METRICS HOTA --TRACKERS_TO_EVAL trackrcnn
+run_kitti_mots.py --METRICS HOTA CLEAR Identity --TRACKERS_TO_EVAL track_rcnn
 
 Command Line Arguments: Defaults, # Comments
     Eval arguments:
@@ -17,7 +17,7 @@ Command Line Arguments: Defaults, # Comments
         'OUTPUT_DETAILED': True,
         'PLOT_CURVES': True,
     Dataset arguments:
-        'GT_FOLDER': os.path.join(code_path, 'data/gt/kitti/kitti_mots'),  # Location of GT data
+        'GT_FOLDER': os.path.join(code_path, 'data/gt/kitti/kitti_mots_train'),  # Location of GT data
         'TRACKERS_FOLDER': os.path.join(code_path, 'data/trackers/kitti/kitti_mots_val'),   # Location of all
                                                                                             # trackers
         'OUTPUT_FOLDER': None,  # Where to save eval results (if None, same as TRACKERS_FOLDER)

@@ -1,7 +1,7 @@
-""" run_mots.py
+""" run_mots_challenge.py
 
 Run example:
-run_mots.py --USE_PARALLEL False --METRICS Hota --TRACKERS_TO_EVAL TrackRCNN
+run_mots_challenge.py --METRICS HOTA CLEAR Identity --TRACKERS_TO_EVAL track_rcnn
 
 Command Line Arguments: Defaults, # Comments
     Eval arguments:

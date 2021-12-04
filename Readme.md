@@ -91,15 +91,89 @@ The code can be run in one of two ways:
 To enable you to use TrackEval for evaluation as quickly and easily as possible, we provide ground-truth data, meta-data and example trackers for all currently supported benchmarks.
 You can download this here: [data.zip](https://omnomnom.vision.rwth-aachen.de/data/TrackEval/data.zip) (~150mb).
 
-The data for RobMOTS is separate and can be found here: [rob_mots_train_data.zip](https://omnomnom.vision.rwth-aachen.de/data/RobMOTS/train_data.zip) (~750mb).
+The easiest way to begin is to extract this zip into the repository root folder such that the file paths look like:
 
-The easiest way to begin is to extract this zip into the repository root folder such that the file paths look like: TrackEval/data/gt/...
+```
+TrackEval/data/gt/
+  bdd100k/
+  davis/
+  ht21/
+    HT21-train/
+      HT21-01.txt
+      ...
+    HT21-train.seqmap
+  kitti/
+    kitti_2d_box_train/
+    kitti_mots_train/
+      label_02/
+        0000.txt
+        ...
+      evaluate_mots.seqmap.test
+      evaluate_mots.seqmap.training
+      evaluate_mots.seqmap.training_minus_val
+      evaluate_mots.seqmap.val
+  mot_challenge/
+    MOT15-train/
+    MOT16-train/
+    MOT17-train/
+    MOT20-train/
+    MOTS-train/
+      MOTS20-02/
+        gt/gt.txt
+        seqinfo.ini
+      ...
+    seqmaps/
+      MOT15-all.txt
+      ...
+      MOTS-all.txt
+      MOTS-test.txt
+      MOTS-train.txt
+  tao/
+  youtube_vis/
+```
+
+```
+TrackEval/data/trackers/
+  bdd100k/
+  davis/
+  ht21/HT21-train/
+    bytetrack/data/
+      HT21-01.txt
+      ...
+  kitti/
+    kitti_mots_val/
+      track_rcnn/data/
+        0002.txt
+        ...
+      bytetrack/data/
+        0002.txt
+        ...
+  mot_challenge/
+    MOTS-train/
+      track_rcnn/data/
+        MOTS20-02.txt
+        ...
+      bytetrack/data/
+        MOTS20-02.txt
+        ...
+  tao/
+  youtube_vis/
+```
+
+The data for RobMOTS is separate and can be found here: [rob_mots_train_data.zip](https://omnomnom.vision.rwth-aachen.de/data/RobMOTS/train_data.zip) (~750mb).
 
 This then corresponds to the default paths in the code. You can now run each of the scripts [here](scripts/) without providing any arguments and they will by default evaluate all trackers present in the supplied file structure. To evaluate your own tracking results, simply copy your files as a new tracker folder into the file structure at the same level as the example trackers (MPNTrack, CIWT, track_rcnn, qdtrack, ags, Tracktor++, STEm_Seg), ensuring the same file structure for your trackers as in the example.
 
 Of course, if your ground-truth and tracker files are located somewhere else you can simply use the script arguments to point the code toward your data.
 
 To ensure your tracker outputs data in the correct format, check out our format guides for each of the supported benchmarks [here](docs), or check out the example trackers provided.
+
+### Evaluation on HT21 dataset for Head Tracking
+Evaluating HOTA + CLEAR + Identity + IDEcul metrics on ByteTrack on HT21-train dataset:
+
+```
+python scripts/run_headtracking_challenge.py --METRICS HOTA CLEAR Identity IDEucl --TRACKERS_TO_EVAL bytetrack
+```
 
 ## Evaluate on your own custom benchmark
 

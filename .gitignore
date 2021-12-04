@@ -7,4 +7,5 @@ data/*
 !goutput/Readme.md
 **/__pycache__
 .idea
+.vscode
 error_log.txt

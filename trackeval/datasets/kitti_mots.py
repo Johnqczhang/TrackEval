@@ -16,7 +16,7 @@ class KittiMOTS(_BaseDataset):
         """Default class config values"""
         code_path = utils.get_code_path()
         default_config = {
-            'GT_FOLDER': os.path.join(code_path, 'data/gt/kitti/kitti_mots_val'),  # Location of GT data
+            'GT_FOLDER': os.path.join(code_path, 'data/gt/kitti/kitti_mots_train'),  # Location of GT data
             'TRACKERS_FOLDER': os.path.join(code_path, 'data/trackers/kitti/kitti_mots_val'),  # Trackers location
             'OUTPUT_FOLDER': None,  # Where to save eval results (if None, same as TRACKERS_FOLDER)
             'TRACKERS_TO_EVAL': None,  # Filenames of trackers to eval (if None, all in folder)
@@ -52,6 +52,8 @@ class KittiMOTS(_BaseDataset):
 
         self.tracker_sub_fol = self.config['TRACKER_SUB_FOLDER']
         self.output_sub_fol = self.config['OUTPUT_SUB_FOLDER']
+        if self.output_sub_fol == '':
+            self.output_sub_fol = self.tracker_sub_fol
 
         # Get classes to eval
         self.valid_classes = ['car', 'pedestrian']
@@ -114,7 +116,6 @@ class KittiMOTS(_BaseDataset):
     def _get_seq_info(self):
         seq_list = []
         seq_lengths = {}
-        seqmap_name = 'evaluate_mots.seqmap.' + self.config['SPLIT_TO_EVAL']
 
         if self.config["SEQ_INFO"]:
             seq_list = list(self.config["SEQ_INFO"].keys())
@@ -123,6 +124,7 @@ class KittiMOTS(_BaseDataset):
             if self.config["SEQMAP_FILE"]:
                 seqmap_file = self.config["SEQMAP_FILE"]
             else:
+                seqmap_name = 'evaluate_mots.seqmap.' + self.config['SPLIT_TO_EVAL']
                 if self.config["SEQMAP_FOLDER"] is None:
                     seqmap_file = os.path.join(self.config['GT_FOLDER'], seqmap_name)
                 else:

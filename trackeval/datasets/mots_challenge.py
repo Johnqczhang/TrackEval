@@ -62,6 +62,8 @@ class MOTSChallenge(_BaseDataset):
 
         self.tracker_sub_fol = self.config['TRACKER_SUB_FOLDER']
         self.output_sub_fol = self.config['OUTPUT_SUB_FOLDER']
+        if self.output_sub_fol == '':
+            self.output_sub_fol = self.tracker_sub_fol
 
         # Get classes to eval
         self.valid_classes = ['pedestrian']

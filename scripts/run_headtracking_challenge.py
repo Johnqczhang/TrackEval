@@ -1,8 +1,8 @@
 
-""" run_mot_challenge.py
+""" run_headtracking_challenge.py
 
 Run example:
-run_mot_challenge.py --USE_PARALLEL False --METRICS Hota --TRACKERS_TO_EVAL Lif_T
+run_headtracking_challenge.py --METRICS HOTA CLEAR Identity IDEucl --TRACKERS_TO_EVAL bytetrack
 
 Command Line Arguments: Defaults, # Comments
     Eval arguments:
@@ -17,12 +17,11 @@ Command Line Arguments: Defaults, # Comments
         'OUTPUT_DETAILED': True,
         'PLOT_CURVES': True,
     Dataset arguments:
-        'GT_FOLDER': os.path.join(code_path, 'data/gt/mot_challenge/'),  # Location of GT data
-        'TRACKERS_FOLDER': os.path.join(code_path, 'data/trackers/mot_challenge/'),  # Trackers location
+        'GT_FOLDER': osp.join(code_path, 'data/gt/ht21/HT21-train'),  # Location of GT data
+        'TRACKERS_FOLDER': osp.join(code_path, 'data/trackers/ht21/HT21-train'),  # Trackers location
         'OUTPUT_FOLDER': None,  # Where to save eval results (if None, same as TRACKERS_FOLDER)
         'TRACKERS_TO_EVAL': None,  # Filenames of trackers to eval (if None, all in folder)
         'CLASSES_TO_EVAL': ['pedestrian'],  # Valid: ['pedestrian']
-        'BENCHMARK': 'MOT17',  # Valid: 'MOT17', 'MOT16', 'MOT20', 'MOT15'
         'SPLIT_TO_EVAL': 'train',  # Valid: 'train', 'test', 'all'
         'INPUT_AS_ZIP': False,  # Whether tracker input files are zipped
         'PRINT_CONFIG': True,  # Whether to print current config
@@ -35,10 +34,11 @@ Command Line Arguments: Defaults, # Comments
 
 import sys
 import os
+import os.path as osp
 import argparse
 from multiprocessing import freeze_support
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(0, osp.abspath(osp.join(osp.dirname(__file__), '..')))
 import trackeval  # noqa: E402
 
 if __name__ == '__main__':
